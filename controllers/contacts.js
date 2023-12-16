@@ -15,8 +15,9 @@ const getById = async (req, res) => {
 	res.json(data);
 };
 const add = async (req, res) => {
-	const data = await Contact.create(req.body);
-	res.status(201).json(data);
+	// const {_id: owner} = req.user;
+	// const data = await Contact.create({...req.body, owner});
+	// res.status(201).json(data);
 };
 const remove = async (req, res) => {
 	const { contactId } = req.params;
