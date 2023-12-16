@@ -31,10 +31,10 @@ const login = async (req, res) => {
 	if (!user || !passwordCompare) {
 		throw HttpError(401, "Email or password is wrong");
 	}
-    const payload = {
-        id: user._id,
-    }
-	const token = jwt.sign(payload, JWT_KEY, {expiresIn:"12h"});
+	const payload = {
+		id: user._id,
+	};
+	const token = jwt.sign(payload, JWT_KEY, { expiresIn: "12h" });
 	res.json({
 		token: token,
 		user: {
@@ -44,7 +44,16 @@ const login = async (req, res) => {
 	});
 };
 
+const getCurrent = async (req, res) => {
+	const { email, subscription } = req.user;
+res.json({
+	email,
+	subscription,
+})
+};
+
 module.exports = {
 	register: ctrlWrapper(register),
 	login: ctrlWrapper(login),
+	getCurrent: ctrlWrapper(getCurrent),
 };
