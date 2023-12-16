@@ -5,11 +5,11 @@ const User = require("../models/users");
 const { HttpError } = require("../helpers");
 const { JWT_KEY } = process.env;
 
-const authentication = async (req, res, next) => {
+const authenticate = async (req, res, next) => {
 	const { authorization = "" } = req.headers;
 	const [bearer, token] = authorization.split(" ");
 	if (bearer !== "Bearer") {
-		next(HttpError(401));
+		next(HttpError(401, "Not authorized"));
 	}
 	try {
 		const { id } = jwt.verify(token, JWT_KEY);
@@ -23,4 +23,4 @@ const authentication = async (req, res, next) => {
 		next(HttpError(401, "Not authorized"));
 	}
 };
-module.exports = authentication;
+module.exports = authenticate;
