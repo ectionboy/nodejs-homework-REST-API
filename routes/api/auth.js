@@ -20,4 +20,8 @@ router.post("/logout", ctrlWrapper(authentication), ctrl.logout);
 // current
 router.post("/current", ctrlWrapper(authentication), ctrl.getCurrent);
 
+// subscriptionUpdate
+router.patch("/", ctrlWrapper(authentication), validateBody(schemas.subscriptionSchema), ctrl.subscriptionUpdate);
+
+
 module.exports = router;

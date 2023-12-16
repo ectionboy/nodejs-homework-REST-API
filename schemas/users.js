@@ -3,16 +3,20 @@ const Joi = require("joi");
 const registerSchema = Joi.object({
 	password: Joi.string().required(),
 	email: Joi.string().required(),
-	subscription: Joi.boolean(),
+	subscription: Joi.string().valid("starter", "pro", "business"),
 });
 const loginSchema = Joi.object({
 	password: Joi.string().required(),
 	email: Joi.string().required(),
 });
+const subscriptionSchema = Joi.object({
+	subscription: Joi.string().valid("starter", "pro", "business"),
+});
 
 const schemas = {
-    registerSchema,
-    loginSchema,
-}
+	registerSchema,
+	loginSchema,
+	subscriptionSchema,
+};
 
 module.exports = schemas;
