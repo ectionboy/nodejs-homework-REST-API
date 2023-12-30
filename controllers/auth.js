@@ -4,7 +4,7 @@ const User = require("../models/users");
 const gravatar = require("gravatar");
 const path = require("path");
 const fs = require("fs/promises");
-const { HttpError, ctrlWrapper } = require("../helpers");
+const { HttpError, ctrlWrapper, avatarProcessing } = require("../helpers");
 
 const { JWT_KEY } = process.env;
 
@@ -79,11 +79,17 @@ const subscriptionUpdate = async (req, res) => {
 };
 
 const updateAvatar = async (req, res) => {
+	if (!req.file) {
+		throw HttpError(400, "File not uploaded");
+	}
 	const { _id } = req.user;
 	const { path: tempUpload, originalname } = req.file;
 	const filename = `${_id}_${originalname}`;
 	const resultUpload = path.join(avatarsDir, filename);
-	await fs.rename(tempUpload, resultUpload);
+
+	avatarProcessing(tempUpload, resultUpload);
+
+	await fs.unlink(tempUpload);
 	const avatarURL = path.join("avatars", filename);
 
 	await User.findByIdAndUpdate(_id, { avatarURL });
