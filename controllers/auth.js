@@ -1,21 +1,27 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/users");
-
-const { HttpError, ctrlWrapper } = require("../helpers");
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs/promises");
+const { HttpError, ctrlWrapper, avatarProcessing } = require("../helpers");
 
 const { JWT_KEY } = process.env;
+
+const avatarsDir = path.join(__dirname, "../", "public", "avatars");
 
 const register = async (req, res) => {
 	const { email, password } = req.body;
 	const user = await User.findOne({ email });
 	if (user) {
-		HttpError(409, "Email in use");
+		throw HttpError(409, "Email in use");
 	}
 
 	const hashPassword = await bcrypt.hash(password, 10);
 
-	const newUser = await User.create({ ...req.body, password: hashPassword });
+	const avatarURL = gravatar.url(email);
+
+	const newUser = await User.create({ ...req.body, password: hashPassword, avatarURL });
 	res.status(201).json({
 		user: {
 			email: newUser.email,
@@ -72,10 +78,32 @@ const subscriptionUpdate = async (req, res) => {
 	});
 };
 
+const updateAvatar = async (req, res) => {
+	if (!req.file) {
+		throw HttpError(400, "File not uploaded");
+	}
+	const { _id } = req.user;
+	const { path: tempUpload, originalname } = req.file;
+	const filename = `${_id}_${originalname}`;
+	const resultUpload = path.join(avatarsDir, filename);
+
+	avatarProcessing(tempUpload, resultUpload);
+
+	await fs.unlink(tempUpload);
+	const avatarURL = path.join("avatars", filename);
+
+	await User.findByIdAndUpdate(_id, { avatarURL });
+
+	res.json({
+		avatarURL,
+	});
+};
+
 module.exports = {
 	register: ctrlWrapper(register),
 	login: ctrlWrapper(login),
 	getCurrent: ctrlWrapper(getCurrent),
 	logout: ctrlWrapper(logout),
 	subscriptionUpdate: ctrlWrapper(subscriptionUpdate),
+	updateAvatar: ctrlWrapper(updateAvatar),
 };
